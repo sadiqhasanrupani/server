@@ -6,8 +6,11 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // routes
-import authRoute from "./routes/auth";
-import verifyRoute from "./routes/verify";
+import authRoute from "./routes/auth.router";
+import verifyRoute from "./routes/verify.router";
+import classroomRoute from "./routes/classroom.router";
+import teacherRoute from "./routes/teacher.router";
+import studentRoute from "./routes/student.router";
 
 import { HttpError } from "./types";
 
@@ -26,6 +29,9 @@ app.use(morgan("dev"));
 // routes
 app.use(`${baseUrl}/auth`, authRoute);
 app.use(`${baseUrl}/verify`, verifyRoute);
+app.use(`${baseUrl}/classroom`, classroomRoute);
+app.use(`${baseUrl}/teacher`, teacherRoute);
+app.use(`${baseUrl}/student`, studentRoute);
 
 // error handler
 app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {

@@ -1,10 +1,6 @@
 import { Router } from "express";
 import { body } from "express-validator";
 
-// db and schemas
-import { db } from "../config/db.config";
-import { users } from "../schemas/schemas";
-
 // middlewares
 import { validate } from "../middleware/validate-schema";
 

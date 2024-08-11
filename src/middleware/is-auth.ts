@@ -9,8 +9,8 @@ import { errorNext } from "../utils/error-handler";
 import { DecodedPayload, RoleEnum } from "../types";
 
 export type AuthRequest = {
-  id: number | JwtPayload;
-  role: RoleEnum | JwtPayload;
+  id: number;
+  role: RoleEnum;
 } & Request;
 
 export const isAuth = asyncHandler(async (req: AuthRequest | Request, res: Response, next: NextFunction) => {
