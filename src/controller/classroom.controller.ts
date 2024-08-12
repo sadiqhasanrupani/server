@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import moment from "moment";
 
 // types
@@ -10,7 +10,7 @@ import { asyncHandler } from "../utils/async-handler";
 import { errorNext } from "../utils/error-handler";
 
 // db
-import { db } from "../config/db.config";
+import { db, pool } from "../config/db.config";
 import { classroom_sessions, classrooms } from "../schemas/schemas";
 
 import { AuthRequest } from "../middleware/is-auth";
@@ -59,7 +59,9 @@ export const createClassroom = asyncHandler(async (req: Request, res: Response, 
     return errorNext({ httpStatusCode: 400, message: "unable to create a classroom sessions", next });
   }
 
-  return res.status(200).json({ message: "classroom created successfully." });
+  return res.status(200).json({
+    message: "classroom created successfully.",
+  });
 });
 
 export const getClassrooms = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
