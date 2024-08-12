@@ -13,6 +13,7 @@ import { AuthRequest } from "../middleware/is-auth";
 
 export const createTeacher = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
   const teacherBody: CreateTeacherBody = req.body;
+  const principleId = (req as AuthRequest).id;
 
   // check teacher's email id is already exists or not
   const existingTeachers = await db.select({ id: users.id }).from(users).where(eq(users.email, teacherBody.email));
@@ -54,6 +55,16 @@ export const createTeacher = asyncHandler(async (req: Request, res: Response, ne
 
   if (!teachers[0]) {
     return errorNext({ httpStatusCode: 400, message: "Unable to get the teacher data", next });
+  }
+
+  // insert users_created_by
+  const insertUserCreatedBy = await db.insert(users_created_by).values({
+    user_id: teachers[0].id,
+    created_by: principleId,
+  });
+
+  if (!teachers[0]) {
+    return errorNext({ httpStatusCode: 400, message: "Unable to create user created at table", next });
   }
 
   // check classroom is already assign to a teacher
@@ -127,21 +138,98 @@ export const getAllTeachers = asyncHandler(async (req: Request, res: Response, n
   const principleId = authReq.id;
 
   // getting all teacher details
+  // const getTeachers = await db
+  //   .select({
+  //     id: users.id,
+  //     name: users.name,
+  //     email: users.email,
+  //     classroomName: classrooms.name,
+  //     classroomId: classrooms.id,
+  //     students: count(classroom_students.student_id),
+  //   })
+  //   .from(classrooms)
+  //   .leftJoin(users, eq(classrooms.teacher_id, users.id))
+  //   .innerJoin(classroom_students, eq(classroom_students.classroom_id, classrooms.id))
+  //   .where(and(eq(users.role, "teacher"), eq(classrooms.principle_id, principleId)))
+  //   .groupBy(users.id, classrooms.name, classrooms.id)
+  //   .orderBy(desc(users.created_at));
+
   const getTeachers = await db
     .select({
       id: users.id,
       name: users.name,
       email: users.email,
-      classroomName: classrooms.name,
-      classroomId: classrooms.id,
-      students: count(classroom_students.student_id),
     })
-    .from(classrooms)
-    .innerJoin(users, eq(classrooms.teacher_id, users.id))
-    .innerJoin(classroom_students, eq(classroom_students.classroom_id, classrooms.id))
-    .where(and(eq(users.role, "teacher"), eq(classrooms.principle_id, principleId)))
-    .groupBy(users.id, classrooms.name, classrooms.id)
+    .from(users_created_by)
+    .innerJoin(users, eq(users.id, users_created_by.user_id))
+    .where(and(eq(users.role, "teacher"), eq(users_created_by.created_by, principleId)))
     .orderBy(desc(users.created_at));
 
   return res.status(200).json({ message: "teachers got successfully.", teacherDetails: getTeachers });
+});
+
+export const getTeacher = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const teacherId = parseInt(req.params.userId || "");
+
+  // get teacher detail
+  const teacherDetails = await db
+    .select({ id: users.id, name: users.name, email: users.email })
+    .from(users)
+    .where(and(eq(users.id, teacherId), eq(users.role, "teacher")));
+
+  if (!teacherDetails[0]) {
+    return errorNext({ httpStatusCode: 401, message: "un-authorized access", next });
+  }
+
+  return res.status(200).json({ message: "teacher details got successfully.", teacherDetail: teacherDetails[0] });
+});
+
+export const updateTeacher = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const teacherId = parseInt(req.params.userId || "");
+
+  const teacherBody: CreateTeacherBody = req.body;
+
+  // check if the id is valid
+  const validTeacher = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(and(eq(users.id, teacherId), eq(users.role, "teacher")));
+
+  if (!validTeacher[0]) {
+    return errorNext({ httpStatusCode: 401, message: "un-authorized access", next });
+  }
+
+  const timeStamp = new TimestampFormatter();
+  const currentTimeStamp = timeStamp.getCurrentDate().toDate();
+
+  const hashPassword = await bcrypt.hash(teacherBody.password, 12);
+
+  // will update based on the body
+  await db
+    .update(users)
+    .set({ email: teacherBody.email, name: teacherBody.name, password: hashPassword, updated_at: currentTimeStamp })
+    .where(eq(users.id, teacherId));
+
+  return res.status(200).json({ message: "teacher details updated successfully." });
+});
+
+export const deleteTeacher = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const teacherId = parseInt(req.params.userId || "");
+
+  // check if the id is valid
+  const validTeacher = await db.select({ id: users.id }).from(users).where(eq(users.id, teacherId));
+
+  if (!validTeacher[0]) {
+    return errorNext({ httpStatusCode: 401, message: "un-authorized access", next });
+  }
+
+  // first removing from classroom
+  await db.update(classrooms).set({ teacher_id: null }).where(eq(classrooms.teacher_id, teacherId));
+  await db.update(classroom_students).set({ assigned_by: null }).where(eq(classroom_students.assigned_by, teacherId));
+  await db.update(users_created_by).set({ created_by: null }).where(eq(users_created_by.created_by, teacherId));
+
+  // delete main key
+  await db.delete(users).where(eq(users.id, teacherId));
+
+  return res.status(200).json({ message: "Teacher removed successfully." });
 });

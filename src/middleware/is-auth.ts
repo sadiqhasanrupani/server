@@ -11,6 +11,7 @@ import { DecodedPayload, RoleEnum } from "../types";
 export type AuthRequest = {
   id: number;
   role: RoleEnum;
+  name: string;
 } & Request;
 
 export const isAuth = asyncHandler(async (req: AuthRequest | Request, res: Response, next: NextFunction) => {
@@ -23,9 +24,8 @@ export const isAuth = asyncHandler(async (req: AuthRequest | Request, res: Respo
 
   const token = authToken.split(" ")[1];
 
-  if (!token) {
+  if (token === "undefined" || !token)
     return errorNext({ httpStatusCode: unauthorizedStatus, message: "not authenticated", next });
-  }
 
   let decodeToken: DecodedPayload | JwtPayload | string;
   decodeToken = jwt.verify(token, process.env.SECRET_KEY as string);
@@ -39,6 +39,7 @@ export const isAuth = asyncHandler(async (req: AuthRequest | Request, res: Respo
   const authRequest = req as AuthRequest;
   authRequest.id = decodedToken.id;
   authRequest.role = decodedToken.role;
+  authRequest.name = (decodeToken as DecodedPayload).name;
 
   next();
 });

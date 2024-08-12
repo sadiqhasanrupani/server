@@ -7,7 +7,13 @@ import isMentor from "../middleware/is-mentor";
 import { validate } from "../middleware/validate-schema";
 
 // controller
-import { createStudent } from "../controller/student.controller";
+import {
+  createStudent,
+  updateStudentHandler,
+  deleteStudentHandler,
+  getUserHandler,
+  getUsersHandler,
+} from "../controller/student.controller";
 
 const router = Router();
 
@@ -24,6 +30,13 @@ router.post(
   ],
   createStudent,
 );
+
+router.get("/get-all", [isAuth, isMentor], getUsersHandler);
+router.get("/get/:userId", [isAuth, isMentor], getUserHandler);
+
+router.put("/update/:userId", [isAuth, isMentor], updateStudentHandler);
+
+router.delete("/delete/:userId", [isAuth, isMentor], deleteStudentHandler);
 
 const studentRoute = router;
 export default studentRoute;

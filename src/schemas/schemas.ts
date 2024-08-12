@@ -16,7 +16,7 @@ export const dayOfWeek = pgEnum("day_of_week", [
 export const users = pgTable("users", {
   id: serial("id").primaryKey().notNull(),
   name: text("name").notNull(),
-  email: text("email").notNull(),
+  email: text("email").notNull().unique(),
   password: text("password").notNull(),
   role: roleEnum("role").notNull(),
   created_at: timestamp("created_at")
@@ -29,9 +29,10 @@ export const users = pgTable("users", {
 
 export const users_created_by = pgTable("users_created_by", {
   id: serial("id").primaryKey().notNull(),
-  created_by: integer("created_by")
+  user_id: integer("user_id")
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" }),
+  created_by: integer("created_by").references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" }),
   created_at: timestamp("created_at")
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
@@ -101,9 +102,7 @@ export const classroom_students = pgTable("classroom_students", {
   classroom_id: integer("classroom_id")
     .notNull()
     .references(() => classrooms.id, { onDelete: "cascade", onUpdate: "cascade" }),
-  assigned_by: integer("assigned_by")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" }),
+  assigned_by: integer("assigned_by").references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" }),
   student_id: integer("student_id").references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" }),
 });
 

@@ -7,7 +7,13 @@ import isPrinciple from "../middleware/is-principle";
 import { validate } from "../middleware/validate-schema";
 
 // controller
-import { createTeacher, getAllTeachers } from "../controller/teacher.controller";
+import {
+  createTeacher,
+  getAllTeachers,
+  getTeacher,
+  deleteTeacher,
+  updateTeacher,
+} from "../controller/teacher.controller";
 
 const router = Router();
 
@@ -26,6 +32,11 @@ router.post(
 );
 
 router.get("/get-all", [isAuth, isPrinciple], getAllTeachers);
+router.get("/get/:userId", [isAuth, isPrinciple], getTeacher);
+
+router.put("/update/:userId", [isAuth, isPrinciple], updateTeacher);
+
+router.delete("/delete/:userId", [isAuth, isPrinciple], deleteTeacher);
 
 const teacherRoute = router;
 export default teacherRoute;

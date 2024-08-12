@@ -11,7 +11,7 @@ import { errorNext, errorValidator } from "../utils/error-handler";
 import { db } from "../config/db.config";
 
 // schemas
-import { users } from "../schemas/schemas";
+import { users, users_created_by } from "../schemas/schemas";
 
 // types
 import { HttpError, LoginBody, RegisterBody } from "../types";
@@ -49,6 +49,11 @@ export const registerHandler = asyncHandler(async (req: Request, res: Response, 
 
   const userDetails = await db.select({ id: users.id }).from(users).where(eq(users.email, registerBody.email));
 
+  const insertUserCreatedBy = await db.insert(users_created_by).values({
+    user_id: userDetails[0].id,
+    created_by: userDetails[0].id,
+  });
+
   if (!userDetails[0]) {
     return errorNext({ httpStatusCode: 400, message: "Unable to get the recent registered user", next });
   }
@@ -58,6 +63,7 @@ export const registerHandler = asyncHandler(async (req: Request, res: Response, 
     {
       id: userDetails[0].id,
       role: registerBody.role,
+      name: registerBody.name,
     },
     process.env.SECRET_KEY as string,
     {
@@ -73,7 +79,7 @@ export const loginHandler = asyncHandler(async (req: Request, res: Response, nex
 
   // check if email already exists
   const userDetails = await db
-    .select({ id: users.id, password: users.password, role: users.role })
+    .select({ id: users.id, password: users.password, role: users.role, name: users.name })
     .from(users)
     .where(eq(users.email, loginBody.email));
 
@@ -103,6 +109,7 @@ export const loginHandler = asyncHandler(async (req: Request, res: Response, nex
     {
       id: userDetails[0].id,
       role: userDetails[0].role,
+      name: userDetails[0].name,
     },
     process.env.SECRET_KEY as string,
     {

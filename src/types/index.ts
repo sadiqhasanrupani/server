@@ -20,6 +20,7 @@ export type ClassroomSession = {
 export type DecodedPayload = {
   id: number;
   role: RoleEnum;
+  name: string;
 };
 
 // body types
