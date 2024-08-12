@@ -27,7 +27,7 @@ router.post(
     body("password")
       .notEmpty()
       .withMessage("password is empty")
-      .isLength({ min: 6 })
+      .isLength({ min: 5 })
       .withMessage("password should contain at-least 6 characters"),
   ]),
   registerHandler,
@@ -40,7 +40,7 @@ router.post(
     body("password")
       .notEmpty()
       .withMessage("password is empty")
-      .isLength({ min: 6 })
+      .isLength({ min: 5 })
       .withMessage("password should contain at-least 6 characters"),
   ]),
   loginHandler,
