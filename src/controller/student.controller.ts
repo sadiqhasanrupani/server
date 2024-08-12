@@ -78,7 +78,7 @@ export const getUsersHandler = asyncHandler(async (req: Request, res: Response, 
   const getOwners = await db
     .select({ createdBy: users_created_by.created_by })
     .from(users_created_by)
-    .where(eq(users_created_by.created_by, mentorId));
+    .where(eq(users_created_by.user_id, mentorId));
 
   const getOwnerDetail = getOwners[0];
 

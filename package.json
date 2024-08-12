@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./dist/server.js",
-    "start-dev": "nodemon ./dist/server.js",
+    "start-dev": "env-cmd -f dev.env nodemon ./dist/server.js",
+    "drizzle-push-dev": "env-cmd -f dev.env npx drizzle-kit push",
+    "drizzle-push": "npx drizzle-kit push",
     "watch-tsc": "rimraf ./dist && npx tsc -w",
     "prebuild": "npm install ",
     "build": "npx tsc"
@@ -19,6 +21,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.33.0",
+    "env-cmd": "^10.1.0",
     "express": "^4.19.2",
     "express-validator": "^7.1.0",
     "jsonwebtoken": "^9.0.2",

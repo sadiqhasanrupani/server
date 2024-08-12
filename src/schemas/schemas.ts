@@ -3,12 +3,12 @@ import { sql } from "drizzle-orm";
 
 export const roleEnum = pgEnum("role", ["principle", "teacher", "student"]);
 
-export const dayOfWeek = pgEnum("day_of_week", [
+export const dayOfWeek = pgEnum("days_of_week", [
   "monday",
   "tuesday",
   "wednesday",
-  "thrusday",
   "friday",
+  "Thurssday",
   "saturday",
   "sunday",
 ]);
@@ -48,6 +48,7 @@ export const classrooms = pgTable("classrooms", {
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   name: text("name").notNull(),
+  description: text("description"),
   created_at: timestamp("created_at")
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
@@ -63,7 +64,7 @@ export const classroom_sessions = pgTable(
     classroom_id: integer("classroom_id")
       .notNull()
       .references(() => classrooms.id, { onDelete: "cascade" }),
-    day_of_week: dayOfWeek("day_of_week").notNull(),
+    day_of_week: text("day_of_week").notNull(),
     start_time: time("start_time").notNull(),
     end_time: time("end_time").notNull(),
     created_at: timestamp("created_at")
@@ -113,7 +114,7 @@ export const time_tables = pgTable(
     classroom_id: integer("classroom_id")
       .notNull()
       .references(() => classrooms.id, { onDelete: "cascade" }),
-    day_of_week: dayOfWeek("day_of_week").notNull(),
+    day_of_week: text("day_of_week").notNull(),
     start_time: time("start_time").notNull(),
     end_time: time("end_time").notNull(),
     created_at: timestamp("created_at")

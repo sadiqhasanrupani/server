@@ -38,8 +38,9 @@ export type LoginBody = {
 
 export type CreateClassroomBody = {
   name: string;
+  description?: string;
   daysOfWeek: ClassroomSession[];
-  teacherId: number;
+  teacherId?: number;
 };
 
 export type CreateTeacherBody = {

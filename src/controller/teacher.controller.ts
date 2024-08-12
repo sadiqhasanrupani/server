@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { and, count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, isNotNull, not, notInArray } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 import { asyncHandler } from "../utils/async-handler";
@@ -232,4 +232,52 @@ export const deleteTeacher = asyncHandler(async (req: Request, res: Response, ne
   await db.delete(users).where(eq(users.id, teacherId));
 
   return res.status(200).json({ message: "Teacher removed successfully." });
+});
+
+export const getAllUnassigned = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const authReq = req as AuthRequest;
+
+  // fist getting all assigned teacher id
+  const assignedTeachers = await db
+    .select({ teacherId: classrooms.teacher_id })
+    .from(classrooms)
+    .where(and(isNotNull(classrooms.teacher_id), eq(classrooms.principle_id, authReq.id)));
+
+  let unassignedTeachers: { id: number; name: string; email: string }[] = [];
+
+  if (assignedTeachers.length > 0) {
+    for (const assignedTeacher of assignedTeachers) {
+      const unassignedTeachersSelect = await db
+        .select({ id: users.id, name: users.name, email: users.email })
+        .from(users_created_by)
+        .innerJoin(users, eq(users.id, users_created_by.user_id))
+        .where(
+          and(
+            eq(users_created_by.created_by, authReq.id),
+            eq(users.role, "teacher"),
+            not(eq(users.id, assignedTeacher.teacherId as number)),
+          ),
+        )
+        .orderBy(desc(users.created_at));
+
+      unassignedTeachers.push(unassignedTeachersSelect[0]);
+    }
+  } else {
+    const getTeachers = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+      })
+      .from(users_created_by)
+      .innerJoin(users, eq(users.id, users_created_by.user_id))
+      .where(and(eq(users.role, "teacher"), eq(users_created_by.created_by, authReq.id)))
+      .orderBy(desc(users.created_at));
+
+    unassignedTeachers = getTeachers;
+  }
+
+  return res
+    .status(200)
+    .json({ message: "got all of the unassigned teachers", unassignedTeachers: unassignedTeachers });
 });

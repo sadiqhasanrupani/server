@@ -26,34 +26,20 @@ router.post("/create", [
       .custom((value) => {
         const daysOfWeek = value as ClassroomSession[];
 
-        const timeMap: { [key: string]: string } = {};
-
         for (const session of daysOfWeek) {
-          // Validate time format
-          const startTime = moment(session.startTime, "HH:mm:ss", true);
-          const endTime = moment(session.endTime, "HH:mm:ss", true);
+          const startTime = moment(session.startTime, "HH:mm", true);
+          const endTime = moment(session.endTime, "HH:mm", true);
 
           if (!startTime.isValid()) {
-            throw new Error(`Invalid start time format for ${session.dayOfWeek}. Expected format: HH:mm:ss.`);
+            throw new Error(`Invalid start time format for ${session.dayOfWeek}. Expected format: HH:mm.`);
           }
 
           if (!endTime.isValid()) {
-            throw new Error(`Invalid end time format for ${session.dayOfWeek}. Expected format: HH:mm:ss.`);
+            throw new Error(`Invalid end time format for ${session.dayOfWeek}. Expected format: HH:mm.`);
           }
 
-          // Check that start time is less than end time
-          if (startTime.isSameOrAfter(endTime)) {
+          if (startTime.isAfter(endTime)) {
             throw new Error(`Start time must be earlier than end time for ${session.dayOfWeek}.`);
-          }
-
-          const formattedStartTime = startTime.format("HH:mm:ss");
-          const formattedEndTime = endTime.format("HH:mm:ss");
-          const key = `${formattedStartTime}-${formattedEndTime}`;
-
-          if (timeMap[key]) {
-            throw new Error(`Start time and end time cannot be the same for ${session.dayOfWeek} and ${timeMap[key]}.`);
-          } else {
-            timeMap[key] = session.dayOfWeek;
           }
         }
 

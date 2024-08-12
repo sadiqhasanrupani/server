@@ -10,6 +10,7 @@ import { validate } from "../middleware/validate-schema";
 import {
   createTeacher,
   getAllTeachers,
+  getAllUnassigned,
   getTeacher,
   deleteTeacher,
   updateTeacher,
@@ -32,10 +33,10 @@ router.post(
 );
 
 router.get("/get-all", [isAuth, isPrinciple], getAllTeachers);
+router.get("/get-all-unassigned", [isAuth, isPrinciple], getAllUnassigned);
 router.get("/get/:userId", [isAuth, isPrinciple], getTeacher);
 
 router.put("/update/:userId", [isAuth, isPrinciple], updateTeacher);
-
 router.delete("/delete/:userId", [isAuth, isPrinciple], deleteTeacher);
 
 const teacherRoute = router;
