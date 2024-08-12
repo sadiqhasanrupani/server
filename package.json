@@ -6,8 +6,7 @@
     "start": "node ./dist/server.js",
     "start-dev": "nodemon ./dist/server.js",
     "watch-tsc": "rimraf ./dist && npx tsc -w",
-    "prebuild": "npm install npx tsc",
-    "build": "node ./dist/server.js"
+    "build": "npm install npx tsc"
   },
   "keywords": [],
   "author": "",
