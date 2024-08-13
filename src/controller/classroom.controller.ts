@@ -148,3 +148,20 @@ export const getUnassignedClassrooms = asyncHandler(async (req: Request, res: Re
 
   return res.status(200).json({ message: "Successfuly got all of the classrooms.", classrooms: getClassrooms });
 });
+
+export const deleteClasroom = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  const authReq = req as AuthRequest;
+  const classId = parseInt(req.params.classId);
+
+  // check class id is valid or not
+  const validClassrooms = await db
+    .select({ id: classrooms.id })
+    .from(classrooms)
+    .where(and(eq(classrooms.id, classId), eq(classrooms.principle_id, authReq.id)));
+
+  if (!validClassrooms[0]) {
+    return errorNext({ httpStatusCode: 401, message: "unauthorized access", next });
+  }
+
+  return res.status(200).json({ message: "Classroom deleted successfully." });
+});

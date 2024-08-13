@@ -8,7 +8,12 @@ import { isAuth } from "../middleware/is-auth";
 import isPrinciple from "../middleware/is-principle";
 
 // controller
-import { createClassroom, getClassrooms, getUnassignedClassrooms } from "../controller/classroom.controller";
+import {
+  createClassroom,
+  getClassrooms,
+  getUnassignedClassrooms,
+  deleteClasroom,
+} from "../controller/classroom.controller";
 
 // types
 import { ClassroomSession } from "../types";
@@ -51,6 +56,9 @@ router.post("/create", [
 
 router.get("/get-all", [isAuth, isPrinciple], getClassrooms);
 router.get("/get-all-unassigned", [isAuth, isPrinciple], getUnassignedClassrooms);
+
+// delete classroom
+router.delete("/delete/:classId", [isAuth, isPrinciple], deleteClasroom);
 
 const classroomRoute = router;
 export default classroomRoute;
