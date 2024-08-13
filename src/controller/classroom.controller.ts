@@ -163,5 +163,7 @@ export const deleteClasroom = asyncHandler(async (req: Request, res: Response, n
     return errorNext({ httpStatusCode: 401, message: "unauthorized access", next });
   }
 
+  await db.delete(classrooms).where(and(eq(classrooms.id, classId), eq(classrooms.principle_id, authReq.id)));
+
   return res.status(200).json({ message: "Classroom deleted successfully." });
 });
