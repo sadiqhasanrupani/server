@@ -1,4 +1,6 @@
-.env
+*.env
+.tsbuildinfo
+
 /node_modules
 /dist
 /drizzle

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, count, desc, eq, isNull, sql } from "drizzle-orm";
 import moment from "moment";
 
 // types
@@ -11,7 +11,7 @@ import { errorNext } from "../utils/error-handler";
 
 // db
 import { db, pool } from "../config/db.config";
-import { classroom_sessions, classrooms } from "../schemas/schemas";
+import { classroom_sessions, classroom_students, classrooms, users } from "../schemas/schemas";
 
 import { AuthRequest } from "../middleware/is-auth";
 
@@ -71,12 +71,67 @@ export const getClassrooms = asyncHandler(async (req: Request, res: Response, ne
 
   // get classrooms
   const getClassrooms = await db
-    .select({ id: classrooms.id, name: classrooms.name })
+    .select({
+      id: classrooms.id,
+      name: classrooms.name,
+      assignedTeacher: users.name,
+      assignedTeacherId: users.id,
+      days: classroom_sessions.day_of_week,
+      startTime: classroom_sessions.start_time,
+      endTime: classroom_sessions.end_time,
+      students: count(classroom_students.student_id),
+    })
     .from(classrooms)
+    .leftJoin(users, eq(users.id, classrooms.teacher_id))
+    .leftJoin(classroom_sessions, eq(classroom_sessions.classroom_id, classrooms.id))
+    .leftJoin(classroom_students, eq(classroom_students.classroom_id, classrooms.id))
+    .groupBy(
+      classrooms.id,
+      users.id,
+      users.name,
+      classroom_sessions.day_of_week,
+      classroom_sessions.start_time,
+      classroom_sessions.end_time,
+    )
     .where(eq(classrooms.principle_id, principleId))
     .orderBy(desc(classrooms.created_at));
 
-  return res.status(200).json({ message: "Successfuly got all of the classrooms.", classrooms: getClassrooms });
+  type Day = {
+    day: string | null;
+    startTime: string | null;
+    endTime: string | null;
+  };
+
+  type Classroom = {
+    days: Day[];
+  } & (typeof getClassrooms)[0];
+
+  const groupedClassrooms: Classroom[] = getClassrooms.reduce((acc: Classroom[], current) => {
+    // Find the classroom in the accumulator
+    let classroom = acc.find(
+      (c) => c.id === current.id && c.name === current.name && c.assignedTeacher === current.assignedTeacher,
+    );
+
+    if (!classroom) {
+      // If not found, create a new entry
+      classroom = {
+        ...current,
+        days: [] as any,
+      };
+      acc.push(classroom as Classroom);
+    }
+
+    // Add the day and time to the days array
+    (classroom as Classroom).days.push({
+      day: current.days,
+      startTime: current.startTime,
+      endTime: current.endTime,
+    });
+
+    return acc;
+  }, []);
+
+  return res.status(200).json({ message: "Successfuly got all of the classrooms.", classrooms: groupedClassrooms });
 });
 
 export const getUnassignedClassrooms = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {

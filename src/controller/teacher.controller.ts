@@ -260,7 +260,9 @@ export const getAllUnassigned = asyncHandler(async (req: Request, res: Response,
         )
         .orderBy(desc(users.created_at));
 
-      unassignedTeachers.push(unassignedTeachersSelect[0]);
+      if (unassignedTeachersSelect[0]) {
+        unassignedTeachers.push(unassignedTeachersSelect[0]);
+      }
     }
   } else {
     const getTeachers = await db

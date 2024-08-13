@@ -3,15 +3,15 @@ import { sql } from "drizzle-orm";
 
 export const roleEnum = pgEnum("role", ["principle", "teacher", "student"]);
 
-export const dayOfWeek = pgEnum("days_of_week", [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "friday",
-  "Thurssday",
-  "saturday",
-  "sunday",
-]);
+// export const dayOfWeek = pgEnum("days_of_week", [
+//   "monday",
+//   "tuesday",
+//   "wednesday",
+//   "friday",
+//   "Thurssday",
+//   "saturday",
+//   "sunday",
+// ]);
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey().notNull(),

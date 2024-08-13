@@ -1,8 +1,9 @@
 import { ValidationError } from "express-validator";
-import { dayOfWeek, roleEnum } from "../schemas/schemas";
+import { roleEnum } from "../schemas/schemas";
 
 export type RoleEnum = (typeof roleEnum.enumValues)[number];
-export type DayOfWeekEnum = (typeof dayOfWeek.enumValues)[number];
+// export type DayOfWeekEnum = (typeof dayOfWeek.enumValues)[number];
+export type DayOfWeekEnum = "monday" | "tuesday" | "wednesday" | "friday" | "Thurssday" | "saturday" | "sunday";
 
 export interface HttpError extends Error {
   httpStatusCode?: number;
